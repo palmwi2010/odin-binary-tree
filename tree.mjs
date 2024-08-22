@@ -114,16 +114,16 @@ class Tree {
         if (!callback) throw new Error('No callback provided');
         if (node !== null) {
             node.data = callback(node.data);
-            if (node.left !== null) this.inOrder(callback, node.left);
-            if (node.right !== null) this.inOrder(callback, node.right); 
+            if (node.left !== null) this.preOrder(callback, node.left);
+            if (node.right !== null) this.preOrder(callback, node.right); 
         }
     }
 
     postOrder(callback, node = this.root) {
         if (!callback) throw new Error('No callback provided');
         if (node !== null) {
-            if (node.left !== null) this.inOrder(callback, node.left);
-            if (node.right !== null) this.inOrder(callback, node.right); 
+            if (node.left !== null) this.postOrder(callback, node.left);
+            if (node.right !== null) this.postOrder(callback, node.right); 
             node.data = callback(node.data);
         }
     }
@@ -175,3 +175,5 @@ class Tree {
         }
     };
 }
+
+export default Tree;
