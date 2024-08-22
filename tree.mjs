@@ -50,45 +50,117 @@ class Tree {
     }
 
     deleteItem(value, curr = this.root) {
-        if (curr === null) return;
+        if (curr === null) return curr;
 
-        if (value === curr.data) {
-            curr.data = findNextValue
-            return;
+        if (value < curr.data) {
+            curr.left = this.deleteItem(value, curr.left);
+        } else if (value > curr.data) {
+            curr.right = this.deleteItem(value, curr.right);
+        } else {
+
+            // One or no children
+            if (curr.left === null) {
+                return curr.right;
+            }
+
+            // One child
+            if (curr.right === null) {
+                return curr.left;
+            }
+
+            // Both children
+            let succesor = this.findNextValue(curr);
+            curr.data = succesor;
+            curr.right = this.deleteItem(succesor, curr.right);
         }
 
-        const checkSmaller = value < curr.data;
-        let next = checkSmaller ? curr.left:curr.right;
-        if (next === null) return;
+        return curr;
+    }
 
-        if (next.data === value) {
-            // Leaf node
-            if (next.left === null && next.right === null) {
-                if (checkSmaller) {
-                    curr.left = null;
-                } else {
-                    curr.right = null;
-                }
+    find(value, node = this.root) {
+        if (node === null) return null;
+        if (node.data > value) return this.find(value, node.left);
+        if (node.data < value) return this.find(value, node.right);
+        return node;
+    }
+
+    levelOrder(callback) {
+        if (!callback) throw new Error('No callback provided');
+
+        const queue = [this.root];
+        let node;
+
+        while (queue.length > 0) {
+            node = queue.shift();
+            // Queue
+            if (node != null) {
+                node.data = callback(node.data);
+                if (node.left !== null) queue.push(node.left);
+                if (node.right !== null) queue.push(node.right);
             }
-            // Both children node
-            else if (next.left !== null && next.right !== null) {
-                return;
-            }
-            // One child
-            else {
-                if (checkSmaller) {
-                    curr.left = (next.left === null) ? next.right:next.left;
-                } else {
-                    curr.right = (next.left === null) ? next.right:next.left;
-                }
-            }
-        } else {
-            console.log(`proceeding to ${next.data}`);
-            this.deleteItem(value, next);
         }
     }
 
+    inOrder(callback, node = this.root) {
+        if (!callback) throw new Error('No callback provided');
+        if (node !== null) {
+            if (node.left !== null) this.inOrder(callback, node.left);
+            node.data = callback(node.data);
+            if (node.right !== null) this.inOrder(callback, node.right); 
+        }
+    }
 
+    preOrder(callback, node = this.root) {
+        if (!callback) throw new Error('No callback provided');
+        if (node !== null) {
+            node.data = callback(node.data);
+            if (node.left !== null) this.inOrder(callback, node.left);
+            if (node.right !== null) this.inOrder(callback, node.right); 
+        }
+    }
+
+    postOrder(callback, node = this.root) {
+        if (!callback) throw new Error('No callback provided');
+        if (node !== null) {
+            if (node.left !== null) this.inOrder(callback, node.left);
+            if (node.right !== null) this.inOrder(callback, node.right); 
+            node.data = callback(node.data);
+        }
+    }
+
+    height(node = this.root) {
+        if (node === null) return -1;
+        return 1 + Math.max(this.height(node.left), this.height(node.right));
+    }
+
+    depth(node) {
+        if (!node) return -1;
+        let curr = this.root;
+        let counter = 0;
+
+        while (curr !== null) {
+            counter++;
+            if (curr.data === node.data) return counter;
+            if (curr.data < node.data) curr = curr.right;
+            if (curr.data > node.data) curr = curr.left;
+        }
+        return -1;
+    }
+
+    isBalanced(node = this.root) {
+        if (node === null) return true; // Base case
+        if (Math.abs(this.height(node.left) - this.height(node.right)) < 2) {
+            return this.isBalanced(node.left) && this.isBalanced(node.right);
+        }
+        return false;
+    }
+
+    rebalance() {
+        let arr = [];
+        let getArr = x => arr.push(x);
+        this.inOrder(getArr);
+        this.root = this.buildTree(arr);
+    }
 
     prettyPrint(node = this.root, prefix = "", isLeft = true) {
         if (node === null) {
@@ -101,12 +173,5 @@ class Tree {
         if (node.left !== null) {
           this.prettyPrint(node.left, `${prefix}${isLeft ? "    " : "│   "}`, true);
         }
-      };
+    };
 }
-
-let testArr = [1, 7, 4, 23, 8, 9, 4, 3, 5, 7, 9, 67, 6345, 324];
-let check = new Tree(testArr);
-check.insert(2)
-check.insert(22)
-check.deleteItem(324);
-check.prettyPrint()
